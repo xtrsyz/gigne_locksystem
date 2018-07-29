@@ -12,6 +12,6 @@ TriggerClientEvent("ls:updateVehiclePlate", oldPlate, newPlate)
 -- @param int id [opt]
 -- @param string plate
 -- @param string lockStatus [opt]
-TriggerClientEvent("ls:newVehicle", id, plate, lockStatus)
+TriggerClientEvent("ls:newVehicle", plate, id, lockStatus)
     -- or
-TriggerClientEvent("ls:newVehicle", nil, plate, nil)
+TriggerClientEvent("ls:newVehicle", plate, nil, nil)
