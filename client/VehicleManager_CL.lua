@@ -46,13 +46,13 @@ function newVehicle()
             self.lockStatus = 4
             SetVehicleDoorsLocked(self.id, self.lockStatus)
             SetVehicleDoorsLockedForAllPlayers(self.id, 1)
-            TriggerEvent("ls:notify", "Vehicle locked")
+            TriggerEvent("ls:notify", _U("vehicle_locked"))
             TriggerServerEvent("InteractSound_SV:PlayWithinDistance", 10, "lock", 1.0)
         elseif(lockStatus > 2)then
             self.lockStatus = 1
             SetVehicleDoorsLocked(self.id, self.lockStatus)
             SetVehicleDoorsLockedForAllPlayers(self.id, false)
-            TriggerEvent("ls:notify", "Vehicle unlocked")
+            TriggerEvent("ls:notify", _U("vehicle_unlocked"))
             TriggerServerEvent("InteractSound_SV:PlayWithinDistance", 10, "unlock", 1.0)
         end
     end

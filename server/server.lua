@@ -85,7 +85,7 @@ AddEventHandler("ls:checkOwner", function(localVehId, plate, lockStatus)
         TriggerClientEvent("ls:getHasOwner", src, nil, localVehId, plate, lockStatus)
     else
         if(owners[plate] == "locked")then
-            TriggerClientEvent("ls:notify", src, "The keys aren't inside")
+            TriggerClientEvent("ls:notify", src, _U('keys_not_inside'))
         else
             if(identifier == owners[plate]) then
                 TriggerClientEvent("ls:getHasOwner", src, nil, localVehId, plate, lockStatus)
@@ -151,8 +151,8 @@ AddEventHandler('InteractSound_SV:PlayWithinDistance', function(maxDistance, sou
     TriggerClientEvent('InteractSound_CL:PlayWithinDistance', -1, source, maxDistance, soundFile, soundVolume)
 end)
 
-if globalConf['SERVER'].versionChecker then
-    PerformHttpRequest("https://www.dropbox.com/s/3m0pubbh3qqfqyy/version.txt?dl=0", function(err, rText, headers)
+if Config.versionChecker then
+    PerformHttpRequest("https://rawgit.com/Xseba360/esx_locksystem/master/VERSION", function(err, rText, headers)
 		if rText then
 			if tonumber(rText) > tonumber(_VERSION) then
 				print("\n---------------------------------------------------")

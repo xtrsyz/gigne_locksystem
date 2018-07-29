@@ -26,7 +26,7 @@ Citizen.CreateThread(function()
         Wait(0)
 
         -- If the defined key is pressed
-        if(IsControlJustPressed(1, globalConf["CLIENT"].key))then
+        if(IsControlJustPressed(1, Config.key))then
 
             -- Init player infos
             local ply = GetPlayerPed(-1)
@@ -63,10 +63,10 @@ Citizen.CreateThread(function()
                                 vehicle.lock()
                                 time = 0
                             else
-                                TriggerEvent("ls:notify", "You have to wait " .. (timer / 1000) .." seconds")
+                                TriggerEvent("ls:notify", _U("lock_cooldown", (timer / 1000)))
                             end
                         else
-                            TriggerEvent("ls:notify", "The keys aren't inside")
+                            TriggerEvent("ls:notify", _U("keys_not_inside"))
                         end
                     end
                 end
@@ -85,7 +85,7 @@ Citizen.CreateThread(function()
                             -- Lock the vehicle (players can't try to find the keys again)
                             vehicles[localVehPlate] = "locked"
                             TriggerServerEvent("ls:lockTheVehicle", localVehPlate)
-                            TriggerEvent("ls:notify", "The keys aren't inside")
+                            TriggerEvent("ls:notify", _U("keys_not_inside"))
                         end
                     end
                 end
@@ -96,7 +96,7 @@ end)
 
 ---- Timer
 Citizen.CreateThread(function()
-    timer = globalConf['CLIENT'].lockTimer * 1000
+    timer = Config.lockTimer * 1000
     time = 0
 	while true do
 		Wait(1000)
@@ -122,7 +122,7 @@ end)
 
 ---- Locks vehicles if non-playable characters are in them
 -- Can be disabled in "config/shared.lua"
-if(globalConf['CLIENT'].disableCar_NPC)then
+if(Config.disableCar_NPC)then
     Citizen.CreateThread(function()
         while true do
             Wait(0)
@@ -175,7 +175,7 @@ AddEventHandler("ls:getHasOwner", function(hasOwner, localVehId, localVehPlate, 
 
         TriggerEvent("ls:notify", getRandomMsg())
     else
-        TriggerEvent("ls:notify", "This vehicle is not yours")
+        TriggerEvent("ls:notify", _U("vehicle_not_owned"))
     end
 end)
 
@@ -233,7 +233,7 @@ end)
 -- @return boolean
 function canSteal()
     nb = math.random(1, 100)
-    percentage = globalConf["CLIENT"].percentage
+    percentage = Config.percentage
     if(nb < percentage)then
         return true
     else
@@ -244,8 +244,8 @@ end
 ---- Return a random message
 -- @return string
 function getRandomMsg()
-    msgNb = math.random(1, #randomMsg)
-    return randomMsg[msgNb]
+    msgNb = math.random(1, #Config.randomMsg)
+    return Config.randomMsg[msgNb]
 end
 
 ---- Get a vehicle in direction
@@ -278,8 +278,8 @@ end
 -- @param string text
 -- @param float duration [opt]
 function Notify(text, duration)
-	if(globalConf['CLIENT'].notification)then
-		if(globalConf['CLIENT'].notification == 1)then
+	if(Config.notification)then
+		if(Config.notification == 1)then
 			if(not duration)then
 				duration = 0.080
 			end
@@ -287,7 +287,7 @@ function Notify(text, duration)
 			AddTextComponentString(text)
 			Citizen.InvokeNative(0x1E6611149DB3DB6B, "CHAR_LIFEINVADER", "CHAR_LIFEINVADER", true, 1, "LockSystem V" .. _VERSION, "By Deediezi", duration)
 			DrawNotification_4(false, true)
-		elseif(globalConf['CLIENT'].notification == 2)then
+		elseif(Config.notification == 2)then
 			TriggerEvent('chatMessage', '^1LockSystem V' .. _VERSION, {255, 255, 255}, text)
 		else
 			return
