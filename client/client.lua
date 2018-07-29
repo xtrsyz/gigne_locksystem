@@ -170,7 +170,7 @@ end)
 RegisterNetEvent("ls:getHasOwner")
 AddEventHandler("ls:getHasOwner", function(hasOwner, localVehId, localVehPlate, localVehLockStatus)
     if(not hasOwner)then
-        TriggerEvent("ls:newVehicle", localVehId, localVehPlate, localVehLockStatus)
+        TriggerEvent("ls:newVehicle", localVehPlate, localVehId, localVehLockStatus)
         TriggerServerEvent("ls:addOwner", localVehPlate)
 
         TriggerEvent("ls:notify", getRandomMsg())
@@ -184,13 +184,13 @@ end)
 -- @param string plate
 -- @param string lockStatus [opt]
 RegisterNetEvent("ls:newVehicle")
-AddEventHandler("ls:newVehicle", function(id, plate, lockStatus)
+AddEventHandler("ls:newVehicle", function(plate, id, lockStatus)
     if(plate)then
         local plate = string.lower(plate)
         if(not id)then id = nil end
         if(not lockStatus)then lockStatus = nil end
         vehicles[plate] = newVehicle()
-        vehicles[plate].__construct(id, plate, lockStatus)
+        vehicles[plate].__construct(plate, id, lockStatus)
     else
         print("Can't create the vehicle instance. Missing argument PLATE")
     end
@@ -202,7 +202,7 @@ end)
 RegisterNetEvent("ls:giveKeys")
 AddEventHandler("ls:giveKeys", function(plate)
     local plate = string.lower(plate)
-    TriggerEvent("ls:newVehicle", nil, plate, nil)
+    TriggerEvent("ls:newVehicle", plate, nil, nil)
 end)
 
 ---- Piece of code from Scott's InteractSound script : https://forum.fivem.net/t/release-play-custom-sounds-for-interactions/8282

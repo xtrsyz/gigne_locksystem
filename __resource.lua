@@ -7,6 +7,7 @@ client_scripts {
 }
 
 server_scripts {
+	'@mysql-async/lib/MySQL.lua',
     "config/shared.lua",
     "server/chatCommand.lua",
     "server/server.lua"

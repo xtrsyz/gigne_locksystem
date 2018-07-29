@@ -11,22 +11,40 @@
 
 owners = {} -- owners[plate] = identifier
 secondOwners = {} -- secondOwners[plate] = {identifier, identifier, ...}
-
+MySQL.ready(function ()
+    MySQL.Async.fetchAll("SELECT * FROM owned_vehicles",{}, function(data)
+        for _,v in pairs(data) do
+            local vehicle = json.decode(v.vehicle)
+            local plate = string.lower(vehicle.plate)
+            owners[plate] = v.owner
+--            print(plate)
+--            print(v.owner)
+        end
+    end)
+end)
 RegisterServerEvent("ls:retrieveVehiclesOnconnect")
 AddEventHandler("ls:retrieveVehiclesOnconnect", function()
     local src = source
     local srcIdentifier = GetPlayerIdentifiers(src)[1]
-
+    local data = MySQL.Sync.fetchAll("SELECT * FROM owned_vehicles",{})
+    for _,v in pairs(data) do
+        local vehicle = json.decode(v.vehicle)
+        local plate = string.lower(vehicle.plate)
+        owners[plate] = v.owner
+--        print(plate)
+--        print(v.owner)
+    end
     for plate, plyIdentifier in pairs(owners) do
         if(plyIdentifier == srcIdentifier)then
-            TriggerClientEvent("ls:newVehicle", src, nil, plate, nil)
+            local _plate = plate
+            TriggerClientEvent("ls:newVehicle", src, _plate, nil, nil)
         end
     end
 
     for plate, identifiers in pairs(secondOwners) do
         for _, plyIdentifier in ipairs(identifiers) do
             if(plyIdentifier == srcIdentifier)then
-                TriggerClientEvent("ls:newVehicle", src, nil, plate, nil)
+                TriggerClientEvent("ls:newVehicle", src, plate, nil, nil)
             end
         end
     end
@@ -40,7 +58,12 @@ AddEventHandler("ls:addOwner", function(plate)
 
     owners[plate] = identifier
 end)
+RegisterServerEvent("ls:addOwnerWithIdentifier")
+AddEventHandler("ls:addOwnerWithIdentifier", function(targetIdentifier, plate)
+    local plate = string.lower(plate)
 
+    owners[plate] = targetIdentifier
+end)
 RegisterServerEvent("ls:addSecondOwner")
 AddEventHandler("ls:addSecondOwner", function(targetIdentifier, plate)
     local plate = string.lower(plate)
@@ -57,14 +80,18 @@ AddEventHandler("ls:checkOwner", function(localVehId, plate, lockStatus)
     local plate = string.lower(plate)
     local src = source
     local hasOwner = false
-
+    local identifier = GetPlayerIdentifiers(src)[1]
     if(not owners[plate])then
         TriggerClientEvent("ls:getHasOwner", src, nil, localVehId, plate, lockStatus)
     else
         if(owners[plate] == "locked")then
             TriggerClientEvent("ls:notify", src, "The keys aren't inside")
         else
-            TriggerClientEvent("ls:getHasOwner", src, true, localVehId, plate, lockStatus)
+            if(identifier == owners[plate]) then
+                TriggerClientEvent("ls:getHasOwner", src, nil, localVehId, plate, lockStatus)
+            else
+                TriggerClientEvent("ls:getHasOwner", src, true, localVehId, plate, lockStatus)
+            end
         end
     end
 end)
@@ -125,7 +152,7 @@ AddEventHandler('InteractSound_SV:PlayWithinDistance', function(maxDistance, sou
 end)
 
 if globalConf['SERVER'].versionChecker then
-	PerformHttpRequest("https://www.dropbox.com/s/3m0pubbh3qqfqyy/version.txt?dl=0", function(err, rText, headers)
+    PerformHttpRequest("https://www.dropbox.com/s/3m0pubbh3qqfqyy/version.txt?dl=0", function(err, rText, headers)
 		if rText then
 			if tonumber(rText) > tonumber(_VERSION) then
 				print("\n---------------------------------------------------")
