@@ -1,4 +1,4 @@
-# LockSystem - Version 4.1
+# LockSystem - Version 4.3
 
 [Official FiveM link](https://forum.fivem.net/t/release-locksystem-v2-0-3-updated-the-07-03-at-11pm/17750)
 

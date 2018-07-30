@@ -1,6 +1,6 @@
 ----------------------
 -- Author : Deediezi
--- Version 3.0
+-- Version 4.3
 --
 -- Contributors : No contributors at the moment.
 --
@@ -12,10 +12,9 @@
 owners = {} -- owners[plate] = identifier
 secondOwners = {} -- secondOwners[plate] = {identifier, identifier, ...}
 MySQL.ready(function ()
-    MySQL.Async.fetchAll("SELECT * FROM owned_vehicles",{}, function(data)
+    MySQL.Async.fetchAll("SELECT `plate`, `owner` FROM owned_vehicles",{}, function(data)
         for _,v in pairs(data) do
-            local vehicle = json.decode(v.vehicle)
-            local plate = string.lower(vehicle.plate)
+            local plate = string.lower(v.plate)
             owners[plate] = v.owner
 --            print(plate)
 --            print(v.owner)
@@ -26,10 +25,9 @@ RegisterServerEvent("ls:retrieveVehiclesOnconnect")
 AddEventHandler("ls:retrieveVehiclesOnconnect", function()
     local src = source
     local srcIdentifier = GetPlayerIdentifiers(src)[1]
-    local data = MySQL.Sync.fetchAll("SELECT * FROM owned_vehicles",{})
+    local data = MySQL.Sync.fetchAll("SELECT `plate`, `owner` FROM owned_vehicles",{})
     for _,v in pairs(data) do
-        local vehicle = json.decode(v.vehicle)
-        local plate = string.lower(vehicle.plate)
+        local plate = string.lower(v.plate)
         owners[plate] = v.owner
 --        print(plate)
 --        print(v.owner)
