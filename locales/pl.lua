@@ -12,5 +12,6 @@ Locales['pl'] = {
     ['target_has_keys_sender'] = 'Wskazany gracz ma już klucze do tego pojazdu',
     ['target_has_keys_receiver'] = '%s próbował dać ci klucze, ale ty już je masz',
     ['you_gave_keys'] = "Dałeś klucze od pojazdu %s graczowi %s",
-    ['you_received_keys'] = "Dostałeś klucze od pojazdu %s od gracza %s"
+    ['you_received_keys'] = "Dostałeś klucze od pojazdu %s od gracza %s",
+    ['could_not_find_plate'] = "Nie można było rozpoznać tablicy!"
 }

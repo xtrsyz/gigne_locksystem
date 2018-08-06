@@ -1,6 +1,6 @@
 ----------------------
 -- Author : Deediezi
--- Version 4.3
+-- Version 4.4
 --
 -- Contributors : No contributors at the moment.
 --
@@ -46,48 +46,53 @@ Citizen.CreateThread(function()
 
             -- Get targeted vehicle infos
             if(localVehId and localVehId ~= 0)then
-                local localVehPlate = string.lower(GetVehicleNumberPlateText(localVehId))
-                local localVehLockStatus = GetVehicleDoorLockStatus(localVehId)
-                local hasKey = false
+                local localVehPlateTest = GetVehicleNumberPlateText(localVehId)
+                if localVehPlateTest ~= nil then
+                    local localVehPlate = string.lower(localVehPlateTest)
+                    local localVehLockStatus = GetVehicleDoorLockStatus(localVehId)
+                    local hasKey = false
 
-                -- If the vehicle appear in the table (if this is the player's vehicle or a locked vehicle)
-                for plate, vehicle in pairs(vehicles) do
-                    if(string.lower(plate) == localVehPlate)then
-                        -- If the vehicle is not locked (this is the player's vehicle)
-                        if(vehicle ~= "locked")then
-                            hasKey = true
-                            if(time > timer)then
-                                -- update the vehicle infos (Useful for hydrating instances created by the /givekey command)
-                                vehicle.update(localVehId, localVehLockStatus)
-                                -- Lock or unlock the vehicle
-                                vehicle.lock()
-                                time = 0
+                    -- If the vehicle appear in the table (if this is the player's vehicle or a locked vehicle)
+                    for plate, vehicle in pairs(vehicles) do
+                        if(string.lower(plate) == localVehPlate)then
+                            -- If the vehicle is not locked (this is the player's vehicle)
+                            if(vehicle ~= "locked")then
+                                hasKey = true
+                                if(time > timer)then
+                                    -- update the vehicle infos (Useful for hydrating instances created by the /givekey command)
+                                    vehicle.update(localVehId, localVehLockStatus)
+                                    -- Lock or unlock the vehicle
+                                    vehicle.lock()
+                                    time = 0
+                                else
+                                    TriggerEvent("ls:notify", _U("lock_cooldown", (timer / 1000)))
+                                end
                             else
-                                TriggerEvent("ls:notify", _U("lock_cooldown", (timer / 1000)))
+                                TriggerEvent("ls:notify", _U("keys_not_inside"))
                             end
-                        else
-                            TriggerEvent("ls:notify", _U("keys_not_inside"))
                         end
                     end
-                end
 
-                -- If the player doesn't have the keys
-                if(not hasKey)then
-                    -- If the player is inside the vehicle
-                    if(isInside)then
-                        -- If the player find the keys
-                        if(canSteal())then
-                            -- Check if the vehicle is already owned.
-                            -- And send the parameters to create the vehicle object if this is not the case.
-                            TriggerServerEvent('ls:checkOwner', localVehId, localVehPlate, localVehLockStatus)
-                        else
-                            -- If the player doesn't find the keys
-                            -- Lock the vehicle (players can't try to find the keys again)
-                            vehicles[localVehPlate] = "locked"
-                            TriggerServerEvent("ls:lockTheVehicle", localVehPlate)
-                            TriggerEvent("ls:notify", _U("keys_not_inside"))
+                    -- If the player doesn't have the keys
+                    if(not hasKey)then
+                        -- If the player is inside the vehicle
+                        if(isInside)then
+                            -- If the player find the keys
+                            if(canSteal())then
+                                -- Check if the vehicle is already owned.
+                                -- And send the parameters to create the vehicle object if this is not the case.
+                                TriggerServerEvent('ls:checkOwner', localVehId, localVehPlate, localVehLockStatus)
+                            else
+                                -- If the player doesn't find the keys
+                                -- Lock the vehicle (players can't try to find the keys again)
+                                vehicles[localVehPlate] = "locked"
+                                TriggerServerEvent("ls:lockTheVehicle", localVehPlate)
+                                TriggerEvent("ls:notify", _U("keys_not_inside"))
+                            end
                         end
                     end
+                else
+                    TriggerEvent("ls:notify", _U("could_not_find_plate"))
                 end
             end
         end

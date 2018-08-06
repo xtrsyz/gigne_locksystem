@@ -1,6 +1,6 @@
 ----------------------
 -- Author : Deediezi
--- Version 4.3
+-- Version 4.4
 --
 -- Contributors : No contributors at the moment.
 --
@@ -21,7 +21,7 @@ local Keys = {
 	["NENTER"] = 201, ["N4"] = 108, ["N5"] = 60, ["N6"] = 107, ["N+"] = 96, ["N-"] = 97, ["N7"] = 117, ["N8"] = 61, ["N9"] = 118
 }
 
-_VERSION = 4.3
+_VERSION = 4.4
 
 Config = {
 	Locale = "en",

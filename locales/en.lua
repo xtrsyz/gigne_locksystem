@@ -12,5 +12,6 @@ Locales['en'] = {
     ['target_has_keys_sender'] = 'The target already has the keys of the vehicle',
     ['target_has_keys_receiver'] = '%s tried to give you his keys, but you already had them',
     ['you_gave_keys'] = "You gave the keys of vehicle %s to %s",
-    ['you_received_keys'] = "You have been given the keys of vehicle %s by %s"
+    ['you_received_keys'] = "You have been given the keys of vehicle %s by %s",
+    ['could_not_find_plate'] = "Could not find plate!"
 }
