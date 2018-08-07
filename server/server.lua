@@ -1,6 +1,6 @@
 ----------------------
 -- Author : Deediezi
--- Version 4.4
+-- Version 4.5
 --
 -- Contributors : No contributors at the moment.
 --
@@ -16,8 +16,6 @@ MySQL.ready(function ()
         for _,v in pairs(data) do
             local plate = string.lower(v.plate)
             owners[plate] = v.owner
---            print(plate)
---            print(v.owner)
         end
     end)
 end)
@@ -29,8 +27,6 @@ AddEventHandler("ls:retrieveVehiclesOnconnect", function()
     for _,v in pairs(data) do
         local plate = string.lower(v.plate)
         owners[plate] = v.owner
---        print(plate)
---        print(v.owner)
     end
     for plate, plyIdentifier in pairs(owners) do
         if(plyIdentifier == srcIdentifier)then

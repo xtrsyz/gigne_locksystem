@@ -24,14 +24,14 @@ if(Config.enableGiveKey)then
                                 end
 
                                 if(not alreadyHas)then
-                                    TriggerClientEvent("ls:giveKeys", targetIdentifier, plate)
+                                    TriggerClientEvent("ls:giveKeys", targetId, plate)
                                     TriggerEvent("ls:addSecondOwner", targetIdentifier, plate)
 
-                                    TriggerClientEvent("ls:notify", targetId, "you_received_keys", plate, GetPlayerName(src))
+                                    TriggerClientEvent("ls:notify", targetId, _U("you_received_keys", plate, GetPlayerName(src)))
                                     TriggerClientEvent("ls:notify", src, _U('you_gave_keys', plate, GetPlayerName(targetId)))
                                 else
                                     TriggerClientEvent("ls:notify", src, _U('target_has_keys_sender'))
-                                    TriggerClientEvent("ls:notify", targetId, U('target_has_keys_receiver', GetPlayerName(src)))
+                                    TriggerClientEvent("ls:notify", targetId, _U('target_has_keys_receiver', GetPlayerName(src)))
                                 end
                             else
                                 TriggerClientEvent("ls:notify", src, _U('vehicle_not_owned'))

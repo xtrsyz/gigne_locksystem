@@ -1,6 +1,6 @@
 ----------------------
 -- Author : Deediezi
--- Version 4.4
+-- Version 4.5
 --
 -- Contributors : No contributors at the moment.
 --
