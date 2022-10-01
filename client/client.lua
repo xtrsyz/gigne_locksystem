@@ -12,6 +12,7 @@
 ----
 -- @var vehicles[plate_number] = newVehicle Object
 local vehicles = {}
+local dict = "anim@mp_player_intmenu@key_fob@"
 
 ---- Retrieve the keys of a player when he reconnects.
 -- The keys are synchronized with the server. If you restart the server, all keys disappear.
@@ -19,82 +20,104 @@ AddEventHandler("playerSpawned", function()
     TriggerServerEvent("ls:retrieveVehiclesOnconnect")
 end)
 
----- Main thread
--- The logic of the script is here
-Citizen.CreateThread(function()
-    while true do
-        Wait(0)
+function checkVeh(set, key)
+    return set[key] ~= nil
+end
 
-        -- If the defined key is pressed
-        if(IsControlJustPressed(1, Config.key))then
+function gigneLock( ... )
+    -- Init player infos
+    local ply = GetPlayerPed(-1)
+    local pCoords = GetEntityCoords(ply, true)
+    local px, py, pz = table.unpack(GetEntityCoords(ply, true))
+    isInside = false
 
-            -- Init player infos
-            local ply = GetPlayerPed(-1)
-            local pCoords = GetEntityCoords(ply, true)
-            local px, py, pz = table.unpack(GetEntityCoords(ply, true))
-            isInside = false
+    -- Retrieve the local ID of the targeted vehicle
+    if(IsPedInAnyVehicle(ply, true))then
+        -- by sitting inside him
+        localVehId = GetVehiclePedIsIn(GetPlayerPed(-1), false)
+        isInside = true
+    else
+        -- by targeting the vehicle
+        localVehId = GetTargetedVehicle(pCoords, ply)
+    end
 
-            -- Retrieve the local ID of the targeted vehicle
-            if(IsPedInAnyVehicle(ply, true))then
-                -- by sitting inside him
-                localVehId = GetVehiclePedIsIn(GetPlayerPed(-1), false)
-                isInside = true
-            else
-                -- by targeting the vehicle
-                localVehId = GetTargetedVehicle(pCoords, ply)
-            end
+    -- Get targeted vehicle infos
+    if(localVehId and localVehId ~= 0)then
+        local localVehPlateTest = GetVehicleNumberPlateText(localVehId)
+        if localVehPlateTest ~= nil then
+            -- local localVehPlate = string.lower(localVehPlateTest)
+            local localVehPlate = string.gsub(string.lower(localVehPlateTest), '^%s*(.-)%s*$', '%1')
+            
+            local localVehLockStatus = GetVehicleDoorLockStatus(localVehId)
+            local hasKey = false
 
-            -- Get targeted vehicle infos
-            if(localVehId and localVehId ~= 0)then
-                local localVehPlateTest = GetVehicleNumberPlateText(localVehId)
-                if localVehPlateTest ~= nil then
-                    local localVehPlate = string.lower(localVehPlateTest)
-                    local localVehLockStatus = GetVehicleDoorLockStatus(localVehId)
-                    local hasKey = false
-
-                    -- If the vehicle appear in the table (if this is the player's vehicle or a locked vehicle)
-                    for plate, vehicle in pairs(vehicles) do
-                        if(string.lower(plate) == localVehPlate)then
-                            -- If the vehicle is not locked (this is the player's vehicle)
-                            if(vehicle ~= "locked")then
-                                hasKey = true
-                                if(time > timer)then
-                                    -- update the vehicle infos (Useful for hydrating instances created by the /givekey command)
-                                    vehicle.update(localVehId, localVehLockStatus)
-                                    -- Lock or unlock the vehicle
-                                    vehicle.lock()
-                                    time = 0
-                                else
-                                    TriggerEvent("ls:notify", _U("lock_cooldown", (timer / 1000)))
-                                end
-                            else
-                                TriggerEvent("ls:notify", _U("keys_not_inside"))
-                            end
+            -- If the vehicle appear in the table (if this is the player's vehicle or a locked vehicle)
+            -- for plate, vehicle in pairs(vehicles) do
+                -- if(string.lower(plate) == localVehPlate)then
+                if (checkVeh(vehicles, localVehPlate)) then
+                    vehicle = vehicles[localVehPlate]
+                    -- If the vehicle is not locked (this is the player's vehicle)
+                    if(vehicle ~= "locked")then
+                        hasKey = true
+                        if(time > timer)then
+                            TaskPlayAnim(ply, dict, "fob_click_fp", 8.0, 8.0, -1, 48, 1, false, false, false)
+                            -- update the vehicle infos (Useful for hydrating instances created by the /givekey command)
+                            vehicle.update(localVehId, localVehLockStatus)
+                            -- Lock or unlock the vehicle
+                            local lockStatus = vehicle.lock()
+                            TriggerEvent("gigne_customui:setValue", 'lock', lockStatus)
+                            time = 0
+                        else
+                            -- TriggerEvent("ls:notify", _U("lock_cooldown", (timer / 1000)))
                         end
+                    else
+                        TriggerEvent("ls:notify", _U("keys_not_inside"))
                     end
+                end
+                -- end
+            -- end
 
-                    -- If the player doesn't have the keys
-                    if(not hasKey)then
-                        -- If the player is inside the vehicle
-                        if(isInside)then
-                            -- If the player find the keys
-                            if(canSteal())then
-                                -- Check if the vehicle is already owned.
-                                -- And send the parameters to create the vehicle object if this is not the case.
-                                TriggerServerEvent('ls:checkOwner', localVehId, localVehPlate, localVehLockStatus)
-                            else
-                                -- If the player doesn't find the keys
-                                -- Lock the vehicle (players can't try to find the keys again)
-                                vehicles[localVehPlate] = "locked"
-                                TriggerServerEvent("ls:lockTheVehicle", localVehPlate)
-                                TriggerEvent("ls:notify", _U("keys_not_inside"))
-                            end
-                        end
+            -- If the player doesn't have the keys
+            if(not hasKey)then
+                -- If the player is inside the vehicle
+                if(isInside)then
+                    -- If the player find the keys
+                    if(canSteal())then
+                        -- Check if the vehicle is already owned.
+                        -- And send the parameters to create the vehicle object if this is not the case.
+                        TriggerServerEvent('ls:checkOwner', localVehId, localVehPlate, localVehLockStatus)
+                    else
+                        -- If the player doesn't find the keys
+                        -- Lock the vehicle (players can't try to find the keys again)
+                        vehicles[localVehPlate] = "locked"
+                        TriggerServerEvent("ls:lockTheVehicle", localVehPlate)
+                        TriggerEvent("ls:notify", _U("keys_not_inside"))
                     end
-                else
-                    TriggerEvent("ls:notify", _U("could_not_find_plate"))
                 end
             end
+        else
+            TriggerEvent("ls:notify", _U("could_not_find_plate"))
+        end
+    end
+end
+
+RegisterNetEvent("ls:lock")
+AddEventHandler("ls:lock", function()
+    gigneLock()
+end)
+
+---- Main thread
+-- The logic of the script is here
+Citizen.CreateThread(function()    
+    RequestAnimDict(dict)
+    while not HasAnimDictLoaded(dict) do
+        Citizen.Wait(100)
+    end
+    while true do
+        Wait(0)
+        -- If the defined key is pressed
+        if(IsControlJustPressed(1, Config.key))then
+            gigneLock()
         end
     end
 end)
@@ -119,7 +142,7 @@ Citizen.CreateThread(function()
         	local veh = GetVehiclePedIsTryingToEnter(PlayerPedId(ped))
 	        local lock = GetVehicleDoorLockStatus(veh)
 	        if lock == 4 then
-	        	ClearPedTasks(ped)
+	        	-- ClearPedTasks(ped)
 	        end
         end
 	end
@@ -191,7 +214,6 @@ end)
 RegisterNetEvent("ls:newVehicle")
 AddEventHandler("ls:newVehicle", function(plate, id, lockStatus)
     if(plate)then
-        local plate = string.lower(plate)
         if(not id)then id = nil end
         if(not lockStatus)then lockStatus = nil end
         vehicles[plate] = newVehicle()
@@ -212,10 +234,12 @@ end)
 
 ---- Piece of code from Scott's InteractSound script : https://forum.fivem.net/t/release-play-custom-sounds-for-interactions/8282
 -- I've decided to use only one part of its script so that administrators don't have to download more scripts. I hope you won't forget to thank him!
-RegisterNetEvent('InteractSound_CL:PlayWithinDistance')
-AddEventHandler('InteractSound_CL:PlayWithinDistance', function(playerNetId, maxDistance, soundFile, soundVolume)
+RegisterNetEvent('ls:PlayWithinDistance')
+AddEventHandler('ls:PlayWithinDistance', function(playerNetId, maxDistance, soundFile, soundVolume)
+	local player = GetPlayerFromServerId(playerNetId)
+	if player < 0 then return end
     local lCoords = GetEntityCoords(GetPlayerPed(-1))
-    local eCoords = GetEntityCoords(GetPlayerPed(GetPlayerFromServerId(playerNetId)))
+    local eCoords = GetEntityCoords(GetPlayerPed(player))
     local distIs  = Vdist(lCoords.x, lCoords.y, lCoords.z, eCoords.x, eCoords.y, eCoords.z)
     if(distIs <= maxDistance) then
         SendNUIMessage({
@@ -290,7 +314,7 @@ function Notify(text, duration)
 			end
 			SetNotificationTextEntry("STRING")
 			AddTextComponentString(text)
-			Citizen.InvokeNative(0x1E6611149DB3DB6B, "CHAR_LIFEINVADER", "CHAR_LIFEINVADER", true, 1, "LockSystem V" .. _VERSION, "By Deediezi", duration)
+			Citizen.InvokeNative(0x1E6611149DB3DB6B, "CHAR_LIFEINVADER", "CHAR_LIFEINVADER", true, 1, "LockSystem V" .. _VERSION, "By GiGNe", duration)
 			DrawNotification_4(false, true)
 		elseif(Config.notification == 2)then
 			TriggerEvent('chatMessage', '^1LockSystem V' .. _VERSION, {255, 255, 255}, text)

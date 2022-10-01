@@ -1,4 +1,10 @@
-resource_manifest_version "05cfa83c-a124-4cfa-a768-c24a5811d8f9"
+fx_version 'adamant'
+
+game 'gta5'
+
+description 'ESX LockSystem'
+
+version '4.6'
 
 client_scripts {
     '@es_extended/locale.lua',
@@ -25,4 +31,8 @@ files {
     'client/html/index.html',
     'client/html/sounds/lock.ogg',
     'client/html/sounds/unlock.ogg'
+}
+
+dependencies {
+    'es_extended',
 }

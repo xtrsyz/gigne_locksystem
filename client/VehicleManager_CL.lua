@@ -18,7 +18,7 @@ function newVehicle()
 
     rTable = {}
 
-    rTable.__construct = function(id, plate, lockStatus)
+    rTable.__construct = function(plate, id, lockStatus)
         if(id and type(id) == "number")then
             self.id = id
         end
@@ -43,18 +43,21 @@ function newVehicle()
     rTable.lock = function()
         lockStatus = self.lockStatus
         if(lockStatus <= 2)then
-            self.lockStatus = 4
+            -- self.lockStatus = 4 -- Doesn't allow players to exit the vehicle with the exit vehicle key.
+            self.lockStatus = 7 -- Can be broken into the car. If the glass is broken, the value will be set to 1
             SetVehicleDoorsLocked(self.id, self.lockStatus)
             SetVehicleDoorsLockedForAllPlayers(self.id, 1)
             TriggerEvent("ls:notify", _U("vehicle_locked"))
-            TriggerServerEvent("InteractSound_SV:PlayWithinDistance", 10, "lock", 1.0)
+            TriggerServerEvent("ls:PlayWithinDistance", 10, "lock", 1.0)
         elseif(lockStatus > 2)then
             self.lockStatus = 1
             SetVehicleDoorsLocked(self.id, self.lockStatus)
             SetVehicleDoorsLockedForAllPlayers(self.id, false)
             TriggerEvent("ls:notify", _U("vehicle_unlocked"))
-            TriggerServerEvent("InteractSound_SV:PlayWithinDistance", 10, "unlock", 1.0)
+            TriggerServerEvent("ls:PlayWithinDistance", 10, "unlock", 1.0)
         end
+		print(self.plate, self.lockStatus)
+        return self.lockStatus
     end
 
     -- Setters

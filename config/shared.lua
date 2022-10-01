@@ -21,16 +21,17 @@ local Keys = {
 	["NENTER"] = 201, ["N4"] = 108, ["N5"] = 60, ["N6"] = 107, ["N+"] = 96, ["N-"] = 97, ["N7"] = 117, ["N8"] = 61, ["N9"] = 118
 }
 
-_VERSION = 4.5
+_VERSION = 4.6
 
 Config = {
 	Locale = "en",
+	PlayerIdentifier = "steam",
 	versionChecker = true,			-- Set to false for disable the version checker
 	enableGiveKey = true,			-- Enable or disable the /givekey chatCommand
 	percentage = 50,				-- Percentage chance of finding keys
-	notification = 1,				-- 0 = Disable | 1 = LockSystem notification | 2 = chatMessage notification
+	notification = 0,				-- 0 = Disable | 1 = LockSystem notification | 2 = chatMessage notification
 	key = Keys['U'],				-- e.g : Keys["H"] will be change the U key to the H key for lock/unlock a vehicle
-	disableCar_NPC = false,			-- Set to true for disable NPC's car
+	disableCar_NPC = true,			-- Set to true for disable NPC's car
 	lockTimer = 1,					-- Timer between two changes (open/close - in seconds)
 	randomMsg =	{
 			"You found the keys in the glove compartment",

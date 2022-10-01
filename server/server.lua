@@ -19,10 +19,38 @@ MySQL.ready(function ()
         end
     end)
 end)
+
+function GetIDFromSource(ID) --(Thanks To WolfKnight [forum.FiveM.net])
+    -- return GetPlayerIdentifiers(ID)[1]
+    local IDs = GetPlayerIdentifiers(ID)
+    for k, CurrentID in pairs(IDs) do
+        local ID = stringsplit(CurrentID, ':')
+        if (ID[1]:lower() == Config.PlayerIdentifier) then
+            return ID[2]:lower()
+        end
+    end
+    return nil
+end
+
+function stringsplit(input, seperator)
+	if seperator == nil then
+		seperator = '%s'
+	end
+	
+	local t={} ; i=1
+	
+	for str in string.gmatch(input, '([^'..seperator..']+)') do
+		t[i] = str
+		i = i + 1
+	end
+	
+	return t
+end
+
 RegisterServerEvent("ls:retrieveVehiclesOnconnect")
 AddEventHandler("ls:retrieveVehiclesOnconnect", function()
     local src = source
-    local srcIdentifier = GetPlayerIdentifiers(src)[1]
+    local srcIdentifier = GetIDFromSource(src)
     local data = MySQL.Sync.fetchAll("SELECT `plate`, `owner` FROM owned_vehicles",{})
     for _,v in pairs(data) do
         local plate = string.lower(v.plate)
@@ -47,7 +75,7 @@ end)
 RegisterServerEvent("ls:addOwner")
 AddEventHandler("ls:addOwner", function(plate)
     local src = source
-    local identifier = GetPlayerIdentifiers(src)[1]
+    local identifier = GetIDFromSource(src)
     local plate = string.lower(plate)
 
     owners[plate] = identifier
@@ -74,7 +102,7 @@ AddEventHandler("ls:checkOwner", function(localVehId, plate, lockStatus)
     local plate = string.lower(plate)
     local src = source
     local hasOwner = false
-    local identifier = GetPlayerIdentifiers(src)[1]
+    local identifier = GetIDFromSource(src)
     if(not owners[plate])then
         TriggerClientEvent("ls:getHasOwner", src, nil, localVehId, plate, lockStatus)
     else
@@ -140,13 +168,13 @@ AddEventHandler("ls:updateServerVehiclePlate", function(oldPlate, newPlate)
 end)
 
 -- Piece of code from Scott's InteractSound script : https://forum.fivem.net/t/release-play-custom-sounds-for-interactions/8282
-RegisterServerEvent('InteractSound_SV:PlayWithinDistance')
-AddEventHandler('InteractSound_SV:PlayWithinDistance', function(maxDistance, soundFile, soundVolume)
-    TriggerClientEvent('InteractSound_CL:PlayWithinDistance', -1, source, maxDistance, soundFile, soundVolume)
+RegisterServerEvent('ls:PlayWithinDistance')
+AddEventHandler('ls:PlayWithinDistance', function(maxDistance, soundFile, soundVolume)
+    TriggerClientEvent('ls:PlayWithinDistance', -1, source, maxDistance, soundFile, soundVolume)
 end)
 
 if Config.versionChecker then
-    PerformHttpRequest("https://rawgit.com/Xseba360/esx_locksystem/master/VERSION", function(err, rText, headers)
+    PerformHttpRequest("https://raw.githubusercontent.com/xtrsyz/gigne_locksystem/master/VERSION", function(err, rText, headers)
 		if rText then
 			if tonumber(rText) > tonumber(_VERSION) then
 				print("\n---------------------------------------------------")
@@ -162,3 +190,23 @@ if Config.versionChecker then
 		end
 	end, "GET", "", {what = 'this'})
 end
+
+
+
+RegisterServerEvent("esx_vehicleshop:setVehicleOwned")
+AddEventHandler("esx_vehicleshop:setVehicleOwned", function(vehicleProps, vehicleModel)
+    local src = source
+    local srcIdentifier = GetIDFromSource(src)
+    local plate = string.gsub(string.lower(vehicleProps.plate), '^%s*(.-)%s*$', '%1')
+    owners[plate] = srcIdentifier
+    TriggerClientEvent("ls:newVehicle", src, plate, nil, nil)
+end)
+
+RegisterServerEvent("ls:setKeyOwned")
+AddEventHandler("ls:setKeyOwned", function(vehiclePlate)
+    local src = source
+    local srcIdentifier = GetIDFromSource(src)
+    local plate = string.gsub(string.lower(vehiclePlate), '^%s*(.-)%s*$', '%1')
+    owners[plate] = srcIdentifier
+    TriggerClientEvent("ls:newVehicle", src, plate, nil, nil)
+end)
